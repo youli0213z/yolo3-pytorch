@@ -6,7 +6,7 @@ from tqdm import tqdm
 from utils.utils import get_lr
 
 
-def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, optimizer, epoch, epoch_step, epoch_step_val, gen, gen_val, Epoch, cuda, fp16, scaler, save_period, save_dir, local_rank=0):
+def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, optimizer, epoch, epoch_step, epoch_step_val, gen, gen_val, Epoch, cuda, fp16, scaler, save_period, save_dir, model_type,local_rank=0):
     loss        = 0
     val_loss    = 0
 
@@ -128,7 +128,7 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
         #   保存权值
         #-----------------------------------------------#
         if (epoch + 1) % save_period == 0 or epoch + 1 == Epoch:
-            torch.save(model.state_dict(), os.path.join(save_dir, "ep%03d-loss%.3f-val_loss%.3f.pth" % (epoch + 1, loss / epoch_step, val_loss / epoch_step_val)))
+            torch.save(model.state_dict(), os.path.join(save_dir, model_type+'-'+"ep%03d-loss%.3f-val_loss%.3f.pth" % (epoch + 1, loss / epoch_step, val_loss / epoch_step_val)))
 
         if len(loss_history.val_loss) <= 1 or (val_loss / epoch_step_val) <= min(loss_history.val_loss):
             print('Save best model to best_epoch_weights.pth')

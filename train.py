@@ -14,6 +14,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from nets.yolo import YoloBody
+from nets.yolo import YoloBodySPP
 from nets.yolo_training import (YOLOLoss, get_lr_scheduler, set_optimizer_lr,
                                 weights_init)
 from utils.callbacks import LossHistory, EvalCallback
@@ -38,6 +39,19 @@ from utils.utils_fit import fit_one_epoch
    如果只是训练了几个Step是不会保存的，Epoch和Step的概念要捋清楚一下。
 '''
 if __name__ == "__main__":
+
+    def setup_seed(seed):
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+        np.random.seed(seed)
+        torch.backends.cudnn.deterministic = True
+
+
+    # 设置随机数种子
+    setup_seed(213)
+
+    # 设置模型类型
+    model_type = 'Darknet53-SPPF+FPN-Leaky-xywh'
     #---------------------------------#
     #   Cuda    是否使用Cuda
     #           没有GPU可以设置成False
@@ -249,7 +263,8 @@ if __name__ == "__main__":
     #------------------------------------------------------#
     #   创建yolo模型
     #------------------------------------------------------#
-    model = YoloBody(anchors_mask, num_classes,Activation_F, pretrained=pretrained)
+    #model = YoloBody(anchors_mask, num_classes,Activation_F, pretrained=pretrained)
+    model = YoloBodySPP(anchors_mask, num_classes, Activation_F, pretrained=pretrained,SPP_SPPF = 'SPP')
     if not pretrained:
         weights_init(model)
     if model_path != '':
@@ -284,7 +299,7 @@ if __name__ == "__main__":
     #----------------------#
     #   获得损失函数
     #----------------------#
-    yolo_loss = YOLOLoss(anchors, num_classes, input_shape, Cuda, anchors_mask)
+    yolo_loss = YOLOLoss(anchors, num_classes, input_shape, Cuda, anchors_mask,bbox_iou='')
     #----------------------#
     #   记录Loss
     #----------------------#
@@ -499,7 +514,7 @@ if __name__ == "__main__":
                 train_sampler.set_epoch(epoch)
             set_optimizer_lr(optimizer, lr_scheduler_func, epoch)
 
-            fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, optimizer, epoch, epoch_step, epoch_step_val, gen, gen_val, UnFreeze_Epoch, Cuda, fp16, scaler, save_period, save_dir, local_rank)
+            fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, optimizer, epoch, epoch_step, epoch_step_val, gen, gen_val, UnFreeze_Epoch, Cuda, fp16, scaler, save_period, save_dir, model_type,local_rank)
                         
             if distributed:
                 dist.barrier()
