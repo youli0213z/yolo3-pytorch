@@ -68,7 +68,7 @@ if __name__ == "__main__":
     #   classes_path    指向model_data下的txt，与自己训练的数据集相关 
     #                   训练前一定要修改classes_path，使其对应自己的数据集
     #---------------------------------------------------------------------#
-    classes_path    = 'model_data/voc_classes.txt'
+    classes_path    = 'model_data/cloth_classes.txt'
     #---------------------------------------------------------------------#
     #   anchors_path    代表先验框对应的txt文件，一般不修改。
     #   anchors_mask    用于帮助代码找到对应的先验框，一般不修改。
@@ -159,7 +159,7 @@ if __name__ == "__main__":
     #   Unfreeze_batch_size     模型在解冻后的batch_size
     #------------------------------------------------------------------#
     UnFreeze_Epoch      = 50
-    Unfreeze_batch_size = 4
+    Unfreeze_batch_size = 1
     #------------------------------------------------------------------#
     #   Freeze_Train    是否进行冻结训练
     #                   默认先冻结主干训练后解冻训练。
@@ -215,6 +215,8 @@ if __name__ == "__main__":
     #                   内存较小的电脑可以设置为2或者0  
     #------------------------------------------------------------------#
     num_workers         = 0
+    #   激活函数
+    Activation_F         = 'nn.LeakyReLU(0.1)'
 
     #----------------------------------------------------#
     #   获得图片路径和标签
@@ -247,7 +249,7 @@ if __name__ == "__main__":
     #------------------------------------------------------#
     #   创建yolo模型
     #------------------------------------------------------#
-    model = YoloBody(anchors_mask, num_classes, pretrained=pretrained)
+    model = YoloBody(anchors_mask, num_classes,Activation_F, pretrained=pretrained)
     if not pretrained:
         weights_init(model)
     if model_path != '':
